@@ -1,33 +1,28 @@
 #!/usr/bin/env ruby
 
 require 'pp'
-require 'riemann'
+require 'dogapi'
 require 'sys/proctable'
 
 require 'smith'
 require 'smith/commands/common'
 
-class Riemann::Client
-  def send_maybe_recv(*a)
-    @tcp.send_maybe_recv *a
-  end
-end
-
-class Smith::Riemann
+class Smith::Datadog
 
   include Smith::Commands::Common
   include Smith::Logger
 
   SERVICE_NAME = "Smith"
+  API_KEY = ENV.fetch('DATADOG_API_KEY')
 
   def initialize
-    @riemann = Riemann::Client.new(:host => options[:host], :port => options[:port])
+    @datadog = Dogapi::Client.new(API_KEY)
   end
 
   def run
     Smith::Messaging::Sender.new(Smith::QueueDefinitions::Agency_control.call) do |queue|
       on_check do |check|
-        @riemann << check
+        @datadog.emit_event(Dogapi::Event.new(check[:description], check))
       end
 
       queue.on_error do |channel, channel_close|
@@ -40,13 +35,13 @@ class Smith::Riemann
   end
 
   def run_check(queue)
-    @on_check.call(alert(:heartbeat, :running, "riemann-smith heatbeat", :ttl => options[:interval] * 2))
+    @on_check.call(alert(:heartbeat, :running, "smith-datadog heatbeat"))
 
     queue.on_timeout(options[:timeout]) do |message_id|
       @on_check.call(alert(:agency, :timeout, "Agency timeout."))
     end
 
-    queue.on_reply(:auto_ack => true, :reply_queue_name => "riemann.#{Digest::SHA1.hexdigest($$.to_s)}") do |reply_payload, r|
+    queue.on_reply(:auto_ack => true, :reply_queue_name => "datadog.#{Digest::SHA1.hexdigest($$.to_s)}") do |reply_payload, r|
       check(reply_payload.response).each do |agent|
         @on_check.call(agent)
       end
@@ -97,7 +92,7 @@ class Smith::Riemann
 
   # Construct an alert messages
   def alert(service, state, description, extra={})
-    {:tags => options[:tags], :ttl => options[:ttl], :service => service(service), :state => state(state), :description => description}.merge(extra).tap { |a| logger.info { "#{a[:service]}: #{state(state)}" } }
+    {:source_type_name => 'name', :description => description, :alert_type => 'info', :source_type_name => SERVICE_NAME, :msg_title => "#{service} #{description}", :aggregation_key => service(service)}.merge(extra).tap { |a| logger.info { "#{a[:service]}: #{state(state)}" } }
   end
 
   # Return true if the given pid exists in the process table.
@@ -111,23 +106,22 @@ class Smith::Riemann
   end
 
   def state(state)
-    {:timeout => "timeout", :running => "ok", :critical => "critical"}[state]
+    {:timeout => "warning", :running => "info", :critical => "error"}[state]
   end
 
   def options
     @options ||= begin
       OptionParser.accept(Pathname) {|p,| Pathname.new(p) if p}
 
-      defaults = {:interval => 30, :ttl => nil, :timeout => 11, :agents => [], :group => [], :tags => [], :host => 'localhost', :port => 5555, :agency_timeout => 60}
+      defaults = {:interval => 30, :timeout => 11, :agents => [], :group => [], :tags => [], :host => 'localhost', :port => 5555, :agency_timeout => 60}
       defaults.tap do |options|
         parser = OptionParser.new do |opts|
           opts.separator "\n"
           opts.set_summary_indent "    "
 
           opts.banner = "\nUsage: #{opts.program_name} OPTIONS"
-          opts.on_head "\n  Periodically lists the running agents and sends the result to riemann."
+          opts.on_head "\n  Periodically lists the running agents and sends the result to datadog."
 
-          opts.on("--ttl <i>", Integer, "TTL for events") { |t| options[:ttl] = t }
           opts.on("--interval <i>", Integer, "Polling interval in seconds (default #{options[:interval]})") { |t| options[:interval] = t }
           opts.on("--timeout <i>", Integer, "Agency timeout (default #{options[:timeout]})") { |t| options[:interval] = t }
           opts.on("--host <s>", String, "Riemann host (default #{options[:host]})") { |v| options[:host] = v }
@@ -146,7 +140,7 @@ class Smith::Riemann
   end
 end
 
-checker = Smith::Riemann.new
+checker = Smith::Datadog.new
 
 begin
   include Smith::Logger

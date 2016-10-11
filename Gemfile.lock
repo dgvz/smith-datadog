@@ -1,0 +1,93 @@
+PATH
+  remote: .
+  specs:
+    smith-datadog (0.7.1)
+      activesupport (~> 4.0)
+      dogapi
+      smith (~> 0.8, >= 0.8.3)
+      sys-proctable (~> 0.9)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activesupport (4.2.6)
+      i18n (~> 0.7)
+      json (~> 1.7, >= 1.7.7)
+      minitest (~> 5.1)
+      thread_safe (~> 0.3, >= 0.3.4)
+      tzinfo (~> 1.1)
+    addressable (2.4.0)
+    amq-protocol (2.0.1)
+    amqp (1.6.0)
+      amq-protocol (>= 2.0.1)
+      eventmachine
+    citrus (3.0.2)
+    curses (1.0.1)
+    daemons (1.2.4)
+    dogapi (1.23.0)
+      multi_json
+    eventmachine (1.2.0.1)
+    extlib (0.9.16)
+    git-version-bump (0.15.1)
+    hashie (2.1.2)
+    i18n (0.7.0)
+    json (1.8.3)
+    little-plugger (1.1.4)
+    logging (2.1.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
+    middleware (0.1.0)
+    minitest (5.9.1)
+    multi_json (1.12.1)
+    murmurhash3 (0.1.4)
+    oj (2.17.4)
+    protobuf (3.6.7)
+      activesupport (>= 3.2)
+      middleware
+      thor
+      thread_safe
+    rake (10.5.0)
+    ruby_parser (3.8.2)
+      sexp_processor (~> 4.1)
+    sexp_processor (4.7.0)
+    smith (0.8.6)
+      addressable (~> 2.0)
+      amqp (~> 1.6, ~> 1.0)
+      curses (= 1.0.1)
+      daemons (~> 1.1)
+      eventmachine (~> 1.0)
+      extlib (= 0.9.16)
+      hashie (~> 2.1)
+      logging (~> 2.0)
+      multi_json (~> 1.10)
+      murmurhash3 (= 0.1.4)
+      oj (~> 2.11, >= 2.11.4)
+      protobuf (~> 3.4)
+      ruby_parser (~> 3.6)
+      state_machine (= 1.1.2)
+      sys-proctable (~> 0.9.0)
+      toml-rb (~> 0.3)
+      trollop (~> 2.0)
+    state_machine (1.1.2)
+    sys-proctable (0.9.9)
+    thor (0.19.1)
+    thread_safe (0.3.5)
+    toml-rb (0.3.14)
+      citrus (~> 3.0, > 3.0)
+    trollop (2.1.2)
+    tzinfo (1.2.2)
+      thread_safe (~> 0.1)
+    yard (0.8.7.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1)
+  git-version-bump
+  rake (~> 10)
+  smith-datadog!
+  yard (~> 0.8.7)
+
+BUNDLED WITH
+   1.12.1
