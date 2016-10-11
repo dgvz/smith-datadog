@@ -1,7 +1,9 @@
 Gem::Specification.new do |s|
-  s.name    = 'smith-datadog'
-  s.version = '0.7.1'
-  s.date    = Time.now.strftime("%Y-%m-%d")
+  s.name     = 'smith-datadog'
+  s.version  = '0.7.1'
+  s.version  = "#{s.version}-alpha-#{ENV['TRAVIS_BUILD_NUMBER']}" if ENV['TRAVIS']
+  s.date     = Time.now.strftime("%Y-%m-%d")
+  s.platform = Gem::Platform::RUBY
 
   s.summary = "Monitor smith agents, reporting to Datadog"
   s.description = "Integrate smith agent monitoring with Datadog"
@@ -19,11 +21,18 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'yard', "~> 0.8.7"
   s.add_development_dependency 'bundler', "~> 1"
+  s.add_development_dependency 'ruby_dep', '~> 1.1'
   s.add_development_dependency 'rake', "~> 10"
-  s.add_development_dependency 'git-version-bump', '~> 0.15.1'
   s.add_development_dependency 'rspec', '~> 3.5'
 
   s.executables = %w{smith-datadog}
 
   s.files = `git ls-files -z bin doc`.split("\0")
+
+  begin
+    require 'ruby_dep/travis'
+    s.required_ruby_version = RubyDep::Travis.new.version_constraint
+  rescue LoadError
+    puts 'Unable to set required_ruby_version'
+  end
 end
