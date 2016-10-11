@@ -15,15 +15,15 @@ Gem::Specification.new do |s|
   s.email   = "rob.sharp@digivizer.com"
 
   s.add_dependency "smith", "~> 0.8", ">= 0.8.3"
-  s.add_dependency "dogapi"
+  s.add_dependency "dogapi", '~> 1.2'
   s.add_dependency "sys-proctable", "~> 0.9"
   s.add_dependency "activesupport", "~> 4.0"
 
   s.add_development_dependency 'yard', "~> 0.8.7"
   s.add_development_dependency 'bundler', "~> 1"
   s.add_development_dependency 'rake', "~> 10"
-  s.add_development_dependency 'git-version-bump'
-  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'git-version-bump', '~> 0.15.1'
+  s.add_development_dependency 'rspec', '~> 3.5'
 
   s.executables = %w{smith-datadog}
 
