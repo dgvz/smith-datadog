@@ -1,5 +1,3 @@
-require 'git-version-bump'
-
 Gem::Specification.new do |s|
   s.name    = 'smith-datadog'
   s.version = '0.7.1'

@@ -29,7 +29,6 @@ GEM
       multi_json
     eventmachine (1.2.0.1)
     extlib (0.9.16)
-    git-version-bump (0.15.1)
     hashie (2.1.2)
     i18n (0.7.0)
     json (1.8.3)
