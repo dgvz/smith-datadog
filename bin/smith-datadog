@@ -4,6 +4,7 @@ require 'pp'
 require 'dogapi'
 require 'sys/proctable'
 
+require 'active_support/inflector'
 require 'smith'
 require 'smith/commands/common'
 
@@ -12,7 +13,7 @@ class Smith::Datadog
   include Smith::Commands::Common
   include Smith::Logger
 
-  SERVICE_NAME = "Smith"
+  SERVICE_NAME = "smith.agent"
   API_KEY = ENV.fetch('DATADOG_API_KEY')
 
   def initialize
@@ -21,11 +22,13 @@ class Smith::Datadog
 
   def run
     Smith::Messaging::Sender.new(Smith::QueueDefinitions::Agency_control.call) do |queue|
-      on_check do |check|
-        @datadog.emit_event(Dogapi::Event.new(check[:description], check))
+      on_check do |c|
+        logger.debug { options.inspect }
+        logger.debug { c.inspect }
+        @datadog.service_check(SERVICE_NAME, options[:host], c[:alert_type], :message => c[:description], :tags => ["agent:#{c[:service]}"])
       end
 
-      queue.on_error do |channel, channel_close|
+      queue.on_error do |_, channel_close|
         logger.fatal { "Channel error: #{channel_close.reply_code}: #{channel_close.reply_text}." }
         Smith.stop
       end
@@ -92,7 +95,11 @@ class Smith::Datadog
 
   # Construct an alert messages
   def alert(service, state, description, extra={})
-    {:source_type_name => 'name', :description => description, :alert_type => 'info', :source_type_name => SERVICE_NAME, :msg_title => "#{service} #{description}", :aggregation_key => service(service)}.merge(extra).tap { |a| logger.info { "#{a[:service]}: #{state(state)}" } }
+    {
+      :service => service(service),
+      :description => description,
+      :alert_type => state(state),
+    }.merge(extra).tap { |a| logger.info { "#{a[:service]}: #{state(state)}" } }
   end
 
   # Return true if the given pid exists in the process table.
@@ -102,11 +109,11 @@ class Smith::Datadog
 
   # Return the service name
   def service(name)
-    "#{SERVICE_NAME} #{name}"
+    "#{SERVICE_NAME.downcase}.#{name.to_s.underscore}"
   end
 
   def state(state)
-    {:timeout => "warning", :running => "info", :critical => "error"}[state]
+    {:timeout => 1, :running => 0, :critical => 2}[state]
   end
 
   def options
