@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.summary = "Monitor smith agents, reporting to Datadog"
   s.description = "Integrate smith agent monitoring with Datadog"
 
-  s.homepage = "https://github.com/dgvz/smith-datadog"
+  s.homepage = "https://github.com/digivizer/smith-datadog"
   s.license = "GPL-3.0"
 
   s.authors = ["Richard Heycock", "Rob Sharp"]
