@@ -109,7 +109,7 @@ class Smith::Datadog
 
   # Return the service name
   def service(name)
-    "#{SERVICE_NAME.downcase}.#{name.to_s.underscore}"
+    "#{SERVICE_NAME.downcase}.#{name.to_s}"
   end
 
   def state(state)
