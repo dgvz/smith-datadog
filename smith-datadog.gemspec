@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name     = 'smith-datadog'
-  s.version  = '0.7.3'
+  s.version  = '0.7.4'
   s.version  = "#{s.version}-alpha-#{ENV['TRAVIS_BUILD_NUMBER']}" if ENV['TRAVIS']
   s.date     = Time.now.strftime("%Y-%m-%d")
   s.platform = Gem::Platform::RUBY
