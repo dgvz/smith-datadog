@@ -33,7 +33,13 @@ class Smith::Datadog
         Smith.stop
       end
 
-      EM.add_periodic_timer(options[:interval]) { run_check(queue) }
+      if options[:interval] > 0
+        EM.add_periodic_timer(options[:interval]) { run_check(queue) }
+      else
+        run_check(queue)
+        Smith.stop
+        exit(0)
+      end
     end
   end
 
@@ -76,6 +82,10 @@ class Smith::Datadog
             alert(agent_name, :running, "Agent running")
           else
             alert(agent_name, :critical, "Agent not running")
+            if options[:exit_on_fail]
+              Smith.stop
+              exit(1)
+            end
           end
         end
       rescue RuntimeError => e
@@ -120,7 +130,7 @@ class Smith::Datadog
     @options ||= begin
       OptionParser.accept(Pathname) {|p,| Pathname.new(p) if p}
 
-      defaults = {:interval => 30, :timeout => 11, :agents => [], :group => [], :tags => [], :host => 'localhost', :port => 5555, :agency_timeout => 60}
+      defaults = {:interval => 30, :timeout => 11, :agents => [], :group => [], :tags => [], :host => 'localhost', :port => 5555, :agency_timeout => 60, :exit_on_fail => false}
       defaults.tap do |options|
         parser = OptionParser.new do |opts|
           opts.separator "\n"
@@ -134,6 +144,7 @@ class Smith::Datadog
           opts.on("--host <s>", String, "Riemann host (default #{options[:host]})") { |v| options[:host] = v }
           opts.on("--port <i>", Integer, "Riemann port (default #{options[:port]})") { |v| options[:port] = v }
           opts.on("--tags <tag1,tag1,...>", Array, "Tags to add to the alert") { |t| options[:tags] = t }
+          opts.on("--[no-]exit-on-fail", "Exit on fail") { |t| options[:exit_on_fail] = t }
 
           opts.on("--agents <agent1,agent2,...>", Array, "Agents to monitor") { |v| options[:agents] + v }
           opts.on("--agent-group  <group name>>", Array, "The name of an 'agent group' to monitor") { |g| options[:group] += g }
